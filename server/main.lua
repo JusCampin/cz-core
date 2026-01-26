@@ -1,11 +1,19 @@
-print('[cz-core] server main loaded')
+local function RunCore()
+    SetupHeader()
+end
 
--- ensure RPC module loaded (fxmanifest.lua loads server/rpc.lua before this file)
+if GetCurrentResourceName() ~= "cz-core" then
+    error("ERROR cz-core failed to load, resource must be named cz-core otherwise CoreZ Framework will not work properly")
+else
+    RunCore()
+end
+
 if not CZ_RPC then
 	print('[cz-core] WARNING: CZ_RPC not found')
 else
 	-- example server RPC: returns player's identifiers (filter sensitive identifiers like IP)
-	CZ_RPC.register('getPlayerIdentifiers', function(src)
+	CZ_RPC.register('getPlayerIdentifiers', function(source)
+        local src = source
 		local ids = GetPlayerIdentifiers(src) or {}
 		local filtered = {}
 		for _, id in ipairs(ids) do
@@ -15,9 +23,4 @@ else
 		end
 		return filtered
 	end)
-
-	-- example server RPC: simple echo
-	-- server echo handler removed
 end
-
-print('[cz-core] server RPC handlers registered')
