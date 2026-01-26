@@ -1,25 +1,20 @@
-print('[cz-core] client main loaded')
-
--- ensure RPC client module loaded (fxmanifest.lua loads client/rpc.lua before this file)
 if not CZ_RPC_CLIENT then
 	print('[cz-core] WARNING: CZ_RPC_CLIENT not found')
 else
-	-- client echo handler removed
-
 	Citizen.CreateThread(function()
 		Wait(1000)
 		-- example: call server RPC to get identifiers
 		CZ_RPC_CLIENT.triggerServer('getPlayerIdentifiers', {}, function(ok, res)
 			if ok then
-				print('[cz-core] server returned identifiers: ' .. (json.encode and json.encode(res) or tostring(res)))
+				print('Server returned identifiers: ' .. (json.encode and json.encode(res) or tostring(res)))
 			else
-				print('[cz-core] server RPC error: ' .. tostring(res))
+				print('Server RPC error: ' .. tostring(res))
 			end
 		end)
 	end)
 end
 
-local spawnPos = vector3(686.245, 577.950, 130.461)
+local spawnPos = vector3(-540.58, -212.02, 37.65)
 
 AddEventHandler('onClientGameTypeStart', function()
     exports.spawnmanager:setAutoSpawnCallback(function()
