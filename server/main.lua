@@ -9,7 +9,7 @@ else
 end
 
 -- signal other server resources that cz-core has finished starting
-TriggerEvent('cz-core:ready')
+TriggerEvent('cz-core:ready', GetCore())
 
 ----------------------------------
 -- EXAMPLE SERVER RPC REGISTRATION
