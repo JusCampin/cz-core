@@ -1,7 +1,7 @@
 ----------------------------------
 -- EXAMPLE CLIENT RPC USAGE
 if not CZ_RPC_CLIENT then
-	print('[cz-core] WARNING: CZ_RPC_CLIENT not found')
+	print('WARNING: CZ_RPC_CLIENT not found')
 else
 	Citizen.CreateThread(function()
 		Wait(1000)
