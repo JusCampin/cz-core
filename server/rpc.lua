@@ -119,3 +119,20 @@ end)
 function CZ_RPC.registerServer(name, fn) CZ_RPC.register(name, fn) end
 
 print('[cz-core] server RPC module loaded')
+
+-- Allow other server resources to call registered server RPC handlers directly
+function CZ_RPC.call(name, sourceOrNil, ...)
+    local handler = callbacks[name]
+    if not handler then
+        return false, 'rpc not found'
+    end
+    local src = sourceOrNil or -1
+    local args = { ... }
+    local ok, res = pcall(function()
+        return handler(src, table.unpack(args))
+    end)
+    if not ok then
+        return false, tostring(res)
+    end
+    return true, res
+end
