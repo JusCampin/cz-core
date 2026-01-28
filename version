@@ -1,3 +1,5 @@
-0.2.0
-- Minor: stabilize `GetCore` API and readiness event
-- Minor: expose `Versioner` and `RPC.call` helpers
+0.3.0
+- Refactor: split core API and versioner into `server/core_api.lua` and `server/versioner.lua`
+- API change: event-only delivery via `cz-core:ready` and `cz-core:request_api` (no global/export `GetCore`)
+- Feature: Versioner compares local `version` file with repo `version` (supports raw.githubusercontent & Contents API)
+- Docs: README updated with RPC and Versioner usage examples
