@@ -24,10 +24,17 @@ function CZ_RPC_CLIENT.triggerServer(name, args, cb)
         rd.count = (rd.count or 0) + 1
     end
     if rd.count > client_rl.maxCalls then
-        print(('Client-side rate limit reached for RPC %s (count=%d)'):format(tostring(name), rd.count))
+        if CZLog and CZLog.warn then CZLog.warn(('Client-side rate limit reached for RPC %s (count=%d)'):format(tostring(name), rd.count)) else print(('Client-side rate limit reached for RPC %s (count=%d)'):format(tostring(name), rd.count)) end
         if cb then cb(false, 'rate_limited') end
         return
     end
+
+    -- sanitize inputs
+    if type(name) ~= 'string' then if cb then cb(false, 'invalid_name') end return end
+    if args ~= nil and type(args) ~= 'table' then if cb then cb(false, 'invalid_args') end return end
+
+    local maxArgs = (Config and Config.RPC and Config.RPC.maxArgs) or 20
+    if args and #args > maxArgs then if cb then cb(false, 'too_many_args') end return end
 
     local requestId = tostring(math.random(1, 1e9)) .. '-' .. tostring(GetGameTimer())
     if cb then
@@ -54,24 +61,37 @@ end)
 
 RegisterNetEvent('cz:rpc:clientRequest')
 AddEventHandler('cz:rpc:clientRequest', function(name, requestId, args)
+    if type(name) ~= 'string' then
+        TriggerServerEvent('cz:rpc:clientResponse', requestId, false, 'invalid_name')
+        return
+    end
+    if args ~= nil and type(args) ~= 'table' then
+        TriggerServerEvent('cz:rpc:clientResponse', requestId, false, 'invalid_args')
+        return
+    end
     if Config and Config.RPC and next(Config.RPC.allowedClientRPCs) then
         local allowed = false
         for _,v in ipairs(Config.RPC.allowedClientRPCs) do if v == name then allowed = true break end end
         if not allowed then
-            print(('Blocked client RPC request for %s (not allowed)'):format(tostring(name)))
+            if CZLog and CZLog.warn then CZLog.warn(('Blocked client RPC request for %s (not allowed)'):format(tostring(name))) else print(('Blocked client RPC request for %s (not allowed)'):format(tostring(name))) end
             TriggerServerEvent('cz:rpc:clientResponse', requestId, false, 'not allowed')
             return
         end
     end
     local handler = callbacks[name]
     if not handler then
-        print(('Client RPC not found: %s'):format(tostring(name)))
+        if CZLog and CZLog.warn then CZLog.warn(('Client RPC not found: %s'):format(tostring(name))) else print(('Client RPC not found: %s'):format(tostring(name))) end
         TriggerServerEvent('cz:rpc:clientResponse', requestId, false, 'rpc not found')
         return
     end
     -- audit and run
     local argCount = (args and #args) or 0
-    print(('Client RPC call: %s (args=%d)'):format(tostring(name), argCount))
+    if argCount > ((Config and Config.RPC and Config.RPC.maxArgs) or 20) then
+        if CZLog and CZLog.warn then CZLog.warn(('Client RPC call rejected (too many args): %s (args=%d)'):format(tostring(name), argCount)) else print(('Client RPC call rejected (too many args): %s (args=%d)'):format(tostring(name), argCount)) end
+        TriggerServerEvent('cz:rpc:clientResponse', requestId, false, 'too_many_args')
+        return
+    end
+    if CZLog and CZLog.info then CZLog.info(('Client RPC call: %s (args=%d)'):format(tostring(name), argCount)) else print(('Client RPC call: %s (args=%d)'):format(tostring(name), argCount)) end
 
     local ok,res = pcall(handler, table.unpack(args or {}))
     if ok then
@@ -81,4 +101,4 @@ AddEventHandler('cz:rpc:clientRequest', function(name, requestId, args)
     end
 end)
 
-print('Client RPC module loaded')
+if CZLog and CZLog.info then CZLog.info('Client RPC module loaded') else print('Client RPC module loaded') end
