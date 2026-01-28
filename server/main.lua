@@ -14,7 +14,7 @@ TriggerEvent('cz-core:ready', GetCore())
 ----------------------------------
 -- EXAMPLE SERVER RPC REGISTRATION
 if not CZ_RPC then
-	print('[cz-core] WARNING: CZ_RPC not found')
+	print('WARNING: CZ_RPC not found')
 else
 	-- example server RPC: returns player's identifiers (filter sensitive identifiers like IP)
 	CZ_RPC.register('getPlayerIdentifiers', function(source)
@@ -33,7 +33,7 @@ end
 
 local okCore, Core = pcall(function() return GetCore() end)
 if not okCore or not Core or not Core.Versioner or not Core.Versioner.checkFile then
-	print('[cz-core] Core Versioner not available')
+	print('Core Versioner not available')
 else
 	Core.Versioner.checkFile(GetCurrentResourceName(), 'https://github.com/JusCampin/cz-core')
 end
