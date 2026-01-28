@@ -50,3 +50,5 @@ end)
 if not ok then
 	print((' [cz-core][version-checker] startup error: %s'):format(tostring(err)))
 end
+
+Core.Versioner.checkFile(GetCurrentResourceName(), 'https://github.com/JusCampin/cz-core')
