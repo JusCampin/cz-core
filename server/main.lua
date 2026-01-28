@@ -12,6 +12,9 @@ else
     RunCore()
 end
 
+-- signal other server resources that cz-core has finished starting
+TriggerEvent('cz-core:ready')
+
 ----------------------------------
 -- EXAMPLE SERVER RPC REGISTRATION
 if not CZ_RPC then
@@ -32,23 +35,9 @@ else
 end
 ----------------------------------
 
--- Start version checker (non-blocking)
-local ok, err = pcall(function()
-	local resourceName = GetCurrentResourceName()
-	local src = LoadResourceFile(resourceName, "server/version_checker.lua")
-	if src then
-		local fn, loadErr = load(src, "server/version_checker.lua")
-		if fn then
-			pcall(fn)
-		else
-			print((' [cz-core][version-checker] failed to load module: %s'):format(tostring(loadErr)))
-		end
-	else
-		-- file missing: it's fine, checker is optional
-	end
-end)
-if not ok then
-	print((' [cz-core][version-checker] startup error: %s'):format(tostring(err)))
+local okCore, Core = pcall(function() return GetCore() end)
+if not okCore or not Core or not Core.Versioner or not Core.Versioner.checkFile then
+	print('[cz-core] Core Versioner not available')
+else
+	Core.Versioner.checkFile(GetCurrentResourceName(), 'https://github.com/JusCampin/cz-core')
 end
-
-Core.Versioner.checkFile(GetCurrentResourceName(), 'https://github.com/JusCampin/cz-core')
