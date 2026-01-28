@@ -24,7 +24,7 @@ function CZ_RPC_CLIENT.triggerServer(name, args, cb)
         rd.count = (rd.count or 0) + 1
     end
     if rd.count > client_rl.maxCalls then
-        print(('[cz-core] client-side rate limit reached for RPC %s (count=%d)'):format(tostring(name), rd.count))
+        print(('Client-side rate limit reached for RPC %s (count=%d)'):format(tostring(name), rd.count))
         if cb then cb(false, 'rate_limited') end
         return
     end
@@ -58,20 +58,20 @@ AddEventHandler('cz:rpc:clientRequest', function(name, requestId, args)
         local allowed = false
         for _,v in ipairs(Config.RPC.allowedClientRPCs) do if v == name then allowed = true break end end
         if not allowed then
-            print(('[cz-core] blocked client RPC request for %s (not allowed)'):format(tostring(name)))
+            print(('Blocked client RPC request for %s (not allowed)'):format(tostring(name)))
             TriggerServerEvent('cz:rpc:clientResponse', requestId, false, 'not allowed')
             return
         end
     end
     local handler = callbacks[name]
     if not handler then
-        print(('[cz-core] client RPC not found: %s'):format(tostring(name)))
+        print(('Client RPC not found: %s'):format(tostring(name)))
         TriggerServerEvent('cz:rpc:clientResponse', requestId, false, 'rpc not found')
         return
     end
     -- audit and run
     local argCount = (args and #args) or 0
-    print(('[cz-core] client RPC call: %s (args=%d)'):format(tostring(name), argCount))
+    print(('Client RPC call: %s (args=%d)'):format(tostring(name), argCount))
 
     local ok,res = pcall(handler, table.unpack(args or {}))
     if ok then
@@ -81,4 +81,4 @@ AddEventHandler('cz:rpc:clientRequest', function(name, requestId, args)
     end
 end)
 
-print('[cz-core] client RPC module loaded')
+print('Client RPC module loaded')
