@@ -1,9 +1,5 @@
 local function RunCore()
 	SetupHeader()
-	-- Start version checker (runs once). Calls `StartVersionChecker` defined in server/version_checker.lua
-	if StartVersionChecker then
-		pcall(StartVersionChecker)
-	end
 end
 
 if GetCurrentResourceName() ~= "cz-core" then
