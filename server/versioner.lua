@@ -227,19 +227,41 @@ local function checkFileWrapper(resName, repoOrUrl, cb)
     CheckVersion(repo, current_version, function(ok, res, err)
         if not cb then
             if not ok then
-                print(('[cz-core][versioner] check failed for %s: %s'):format(resName, tostring(err)))
+                print(('[versioner] check failed for %s: %s'):format(resName, tostring(err)))
                 return
             end
-            if res.newer then
-                print(('\n[cz-core] NEW VERSION AVAILABLE for %s!\n  current: %s\n  latest: %s\n  see: https://github.com/%s/releases/latest\n'):format(resName, current_version, res.latest, repo))
-                if changelog and #changelog > 0 then
-                    print('  changelog:')
-                    for _,line in ipairs(changelog) do
-                        print(('    - %s'):format(line))
+
+            local latest = res.latest or ''
+            local cmp = compare_versions(current_version or '', latest)
+            local uptodate = (cmp == 0)
+            local overdate = (cmp > 0)
+            local outdated = (cmp < 0)
+
+            local repoLink = repo or ''
+            if repoLink:match('^[^/]+/[^/]+$') then
+                repoLink = ('https://github.com/%s'):format(repoLink)
+            end
+
+            if uptodate then
+                print(('^2✅ Up to Date! ^5[%s] ^6(Current Version %s)^0'):format(resName, current_version))
+            elseif overdate then
+                print(('^3⚠️ Unsupported! ^5[%s] ^6(Version %s)^0'):format(resName, current_version))
+                if latest ~= '' then
+                    print(('^4Latest Available ^2(%s) ^3<%s>^0'):format(latest, repoLink))
+                end
+            elseif outdated then
+                print(('^1❌ Outdated! ^5[%s] ^6(Version %s)^0'):format(resName, current_version))
+                if latest ~= '' then
+                    print(('^4NEW VERSION ^2(%s) ^3<%s>^0'):format(latest, repoLink))
+                end
+                if res.changelog and #res.changelog > 0 then
+                    print('^4CHANGELOG:^0')
+                    for _, line in ipairs(res.changelog) do
+                        print(('  - %s'):format(line))
                     end
                 end
             else
-                print(('[cz-core] %s is up-to-date (%s)'):format(resName, current_version))
+                print(('%s is up-to-date (%s)'):format(resName, current_version))
             end
             return
         end
@@ -269,4 +291,4 @@ if type(_G.__cz_core_register_versioner) == 'function' then
     _G.__cz_core_register_versioner({ checkFile = checkFileWrapper, CheckVersion = CheckVersion })
 end
 
-print('[cz-core] versioner module loaded')
+print('Versioner module loaded')
