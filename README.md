@@ -1,4 +1,4 @@
-# CoreZ Framework
+# CZ Core - DO NOT USE - DEV ONLY
 
 ## Server APIs
 
