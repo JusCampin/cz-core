@@ -10,7 +10,7 @@ function GunMenu()
     })
 
     GunPage:RegisterElement('subheader', {
-        value = "Select an option below",
+        value = "Select an Option Below",
         slot = "header",
         style = {
             ['font-size'] = '0.94vw',
