@@ -18,7 +18,7 @@ function CZ_RPC.register(name, fn)
         for _,v in ipairs(Config.RPC.allowedServerRPCs) do if v == name then found = true break end end
         if not found then
             table.insert(Config.RPC.allowedServerRPCs, name)
-            print(('[cz-core] auto-allowed server RPC: %s'):format(tostring(name)))
+            print(('Auto-allowed server RPC: %s'):format(tostring(name)))
         end
     end
 end
@@ -41,7 +41,7 @@ AddEventHandler('cz:rpc:request', function(name, requestId, args)
     end
     rateData[src] = rd
     if rd.count > rl_config.maxCalls then
-        print(('[cz-core] rate-limited RPC from %s: %s (count=%d)'):format(tostring(src), tostring(name), rd.count))
+        print(('Rate-limited RPC from %s: %s (count=%d)'):format(tostring(src), tostring(name), rd.count))
         TriggerClientEvent('cz:rpc:response', src, requestId, false, 'rate_limited')
         return
     end
@@ -50,7 +50,7 @@ AddEventHandler('cz:rpc:request', function(name, requestId, args)
         local allowed = false
         for _,v in ipairs(Config.RPC.allowedServerRPCs) do if v == name then allowed = true break end end
         if not allowed then
-            print(('[cz-core] blocked RPC from %s: %s (not allowed)'):format(tostring(src), tostring(name)))
+            print(('Blocked RPC from %s: %s (not allowed)'):format(tostring(src), tostring(name)))
             TriggerClientEvent('cz:rpc:response', src, requestId, false, 'not allowed')
             return
         end
@@ -58,20 +58,20 @@ AddEventHandler('cz:rpc:request', function(name, requestId, args)
 
     local handler = callbacks[name]
     if not handler then
-        print(('[cz-core] RPC not found: %s requested by %s'):format(tostring(name), tostring(src)))
+        print(('RPC not found: %s requested by %s'):format(tostring(name), tostring(src)))
         TriggerClientEvent('cz:rpc:response', src, requestId, false, 'rpc not found')
         return
     end
 
     -- audit: log call summary
     local argCount = (args and #args) or 0
-    print(('[cz-core] RPC call: %s by %s (args=%d)'):format(tostring(name), tostring(src), argCount))
+    print(('RPC call: %s by %s (args=%d)'):format(tostring(name), tostring(src), argCount))
 
     -- concurrent active request limiting
     activeRequests[src] = (activeRequests[src] or 0) + 1
     if activeRequests[src] > ((Config and Config.RPC and Config.RPC.maxPending) or 100) then
         activeRequests[src] = activeRequests[src] - 1
-        print(('[cz-core] too many concurrent RPCs from %s'):format(tostring(src)))
+        print(('Too many concurrent RPCs from %s'):format(tostring(src)))
         TriggerClientEvent('cz:rpc:response', src, requestId, false, 'too_many_concurrent')
         return
     end
@@ -118,7 +118,7 @@ end)
 -- convenience
 function CZ_RPC.registerServer(name, fn) CZ_RPC.register(name, fn) end
 
-print('[cz-core] server RPC module loaded')
+print('Server RPC module loaded')
 
 -- Allow other server resources to call registered server RPC handlers directly
 function CZ_RPC.call(name, sourceOrNil, ...)
