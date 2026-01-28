@@ -209,8 +209,25 @@ end
 
 local CzCoreRPC = {}
 
+-- readiness flag and helper
+local core_ready = false
+AddEventHandler('cz-core:ready', function()
+    core_ready = true
+end)
+
+local function waitForReady(cb)
+    if type(cb) ~= 'function' then return end
+    if core_ready then
+        cb(GetCore())
+        return
+    end
+    AddEventHandler('cz-core:ready', function()
+        cb(GetCore())
+    end)
+end
+
 function GetCore()
-    return { RPC = { raw = CZ_RPC, call = CzCoreRPC.call }, Versioner = { checkFile = checkFileWrapper } }
+    return { RPC = { raw = CZ_RPC, call = CzCoreRPC.call }, Versioner = { checkFile = checkFileWrapper }, waitForReady = waitForReady }
 end
 
 _G.GetCore = GetCore
