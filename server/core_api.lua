@@ -47,7 +47,10 @@ function GetCore()
     return { RPC = { raw = CZ_RPC, call = CzCoreRPC.call }, Versioner = { checkFile = versioner_checkFile }, waitForReady = waitForReady }
 end
 
--- export for other resources
-_G.GetCore = GetCore
-
 print('[cz-core] core API module loaded')
+
+-- Respond to explicit API requests from other resources.
+-- Consumers can register a `cz-core:ready` handler then trigger `cz-core:request_api`.
+AddEventHandler('cz-core:request_api', function()
+    TriggerEvent('cz-core:ready', GetCore())
+end)
