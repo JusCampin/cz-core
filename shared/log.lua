@@ -9,7 +9,7 @@ local function format_msg(level, msg)
         debug = '^5'
     }
     local color = colors[level] or '^7'
-    local prefix = ('[cz-core][%s] '):format(tostring(level):upper())
+    local prefix = ('[%s] '):format(tostring(level):upper())
     return ("%s%s^0"):format(color, prefix .. tostring(msg))
 end
 
