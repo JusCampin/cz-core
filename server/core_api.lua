@@ -26,6 +26,15 @@ local function waitForReady(cb)
     end)
 end
 
+local function withCore(cb)
+    if type(cb) ~= 'function' then return end
+    if type(CZCore) == 'table' then
+        pcall(cb, CZCore)
+        return
+    end
+    waitForReady(function(core) pcall(cb, core) end)
+end
+
 local function versioner_checkFile(resName, repoOrUrl, cb)
     if versioner_impl and versioner_impl.checkFile then
         return versioner_impl.checkFile(resName, repoOrUrl, cb)
@@ -47,7 +56,18 @@ function GetCore()
     return { RPC = { raw = CZ_RPC, call = CzCoreRPC.call }, Versioner = { checkFile = versioner_checkFile }, waitForReady = waitForReady }
 end
 
-print('Core API module loaded')
+if CZLog and CZLog.info then CZLog.info('Core API module loaded') else print('Core API module loaded') end
+
+-- expose as a safe global for consumers that prefer direct access
+-- expose both a non-_G global and an _G entry for backward compatibility
+CZCore = CZCore or GetCore()
+_G.CZCore = _G.CZCore or CZCore
+
+-- attach helper onto global for consumers
+CZCore.withCore = CZCore.withCore or withCore
+
+-- ensure we broadcast readiness and refresh the global when core reloads
+TriggerEvent('cz-core:ready', CZCore)
 
 -- Respond to explicit API requests from other resources.
 -- Consumers can register a `cz-core:ready` handler then trigger `cz-core:request_api`.
