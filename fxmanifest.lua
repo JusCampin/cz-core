@@ -6,17 +6,16 @@ version '0.3.0'
 
 shared_scripts {
     'configs/config.lua',
+    'shared/log.lua',
+    'shared/consumer_helper.lua',
+    'shared/locale.lua',
+    'languages/*.lua'
 }
 
 client_scripts {
     'client/rpc.lua',
+    'client/core_api.lua',
     'client/main.lua',
-    'client/commands.lua',
-    'client/menus/menu_init.lua',
-    'client/menus/spawn_menu.lua',
-    'client/menus/car_menu.lua',
-    'client/menus/gun_menu.lua',
-    'client/menus/main_menu.lua',
 }
 
 server_scripts {
