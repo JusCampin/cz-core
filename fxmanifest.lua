@@ -2,7 +2,6 @@ fx_version 'cerulean'
 game 'gta5'
 
 author 'CoreZ Team'
-description 'Core resource for CoreZ Framework'
 version '0.1.0'
 
 shared_scripts {
@@ -30,3 +29,5 @@ server_scripts {
 dependencies {
     'oxmysql'
 }
+
+exports 'GetCore'
