@@ -23,6 +23,7 @@ server_scripts {
     '@oxmysql/lib/MySQL.lua',
     'server/rpc.lua',
     'server/setup.lua',
+    'server/version_checker.lua',
     'server/main.lua',
 }
 
