@@ -341,6 +341,14 @@ local function checkFileWrapper(resName, repoOrUrl, cb)
         if cb then cb(false, nil, 'resource name must be a string') end
         return
     end
+    _G.__cz_version_inflight = _G.__cz_version_inflight or {}
+    -- If a check for this resource is already in progress, queue the callback and return
+    if _G.__cz_version_inflight[resName] then
+        if cb and type(cb) == 'function' then
+            table.insert(_G.__cz_version_inflight[resName].callbacks, cb)
+        end
+        return
+    end
     -- parse resource version file early
     local version, changelog, repoFromFile = parse_version_file(resName)
     local current_version = version or '0.0.0'
@@ -370,13 +378,17 @@ local function checkFileWrapper(resName, repoOrUrl, cb)
         if cb then cb(false, nil, 'repo not provided or not found in resource version file') end
         return
     end
+    -- mark as inflight and collect callbacks
+    _G.__cz_version_inflight[resName] = { callbacks = {} }
+    if cb and type(cb) == 'function' then
+        table.insert(_G.__cz_version_inflight[resName].callbacks, cb)
+    end
     CheckVersion(repo, current_version, function(ok, res, err)
-        if not cb then
-            if not ok then
-                log('error', ('check failed for %s: %s'):format(resName, tostring(err)))
-                return
-            end
-
+        -- invoke queued callbacks (if any)
+        local inflight = _G.__cz_version_inflight[resName]
+        if not ok then
+            log('error', ('check failed for %s: %s'):format(resName, tostring(err)))
+        else
             local latest = res.latest or ''
             local cmp = compare_versions(current_version or '', latest)
             local uptodate = (cmp == 0)
@@ -389,32 +401,37 @@ local function checkFileWrapper(resName, repoOrUrl, cb)
             end
 
             if uptodate then
-                log('info', ('^2✅ Up to Date! ^5[%s] ^6(Current Version %s)^0'):format(resName, current_version))
+                print(('^2✅ Up to Date! ^5[%s] ^6(Current Version %s)^0'):format(resName, current_version))
             elseif overdate then
-                log('warn', ('^3⚠️ Unsupported! ^5[%s] ^6(Version %s)^0'):format(resName, current_version))
+                print(('^3⚠️ Unsupported! ^5[%s] ^6(Version %s)^0'):format(resName, current_version))
                 if latest ~= '' then
-                    log('info', ('^4Latest Available ^2(%s) ^3<%s>^0'):format(latest, repoLink))
+                    print(('^4Latest Available ^2(%s) ^3<%s>^0'):format(latest, repoLink))
                 end
             elseif outdated then
-                log('error', ('^1❌ Outdated! ^5[%s] ^6(Version %s)^0'):format(resName, current_version))
+                print(('^1❌ Outdated! ^5[%s] ^6(Version %s)^0'):format(resName, current_version))
                 if latest ~= '' then
-                    log('info', ('^4NEW VERSION ^2(%s) ^3<%s>^0'):format(latest, repoLink))
+                    print(('^4NEW VERSION ^2(%s) ^3<%s>^0'):format(latest, repoLink))
                 end
                 if res.changelog and #res.changelog > 0 then
-                    log('info', '^4CHANGELOG:^0')
+                    print(('^4CHANGELOG:^0'))
                     for _, line in ipairs(res.changelog) do
-                        log('info', ('  - %s'):format(line))
+                        print(('  - %s'):format(line))
                     end
                 end
             else
-                log('info', ('%s is up-to-date (%s)'):format(resName, current_version))
+                print(('%s is up-to-date (%s)'):format(resName, current_version))
             end
 
             -- record last check time
             _G.__cz_version_last[resName] = os.time()
-            return
         end
-        cb(ok, res, err)
+
+        if inflight and inflight.callbacks then
+            for _, fn in ipairs(inflight.callbacks) do
+                pcall(fn, ok, res, err)
+            end
+        end
+        _G.__cz_version_inflight[resName] = nil
     end)
 end
 
