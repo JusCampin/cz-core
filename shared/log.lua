@@ -14,11 +14,13 @@ local function format_msg(level, msg)
 end
 
 function CZLog.info(msg)
-    print(format_msg('info', msg))
+    local dev = (Config and Config.Dev and Config.Dev.enabled) or false
+    if dev then print(format_msg('info', msg)) end
 end
 
 function CZLog.warn(msg)
-    print(format_msg('warn', msg))
+    local dev = (Config and Config.Dev and Config.Dev.enabled) or false
+    if dev then print(format_msg('warn', msg)) end
 end
 
 function CZLog.error(msg)
@@ -26,7 +28,8 @@ function CZLog.error(msg)
 end
 
 function CZLog.debug(msg)
-    print(format_msg('debug', msg))
+    local dev = (Config and Config.Dev and Config.Dev.enabled) or false
+    if dev then print(format_msg('debug', msg)) end
 end
 
 return CZLog
