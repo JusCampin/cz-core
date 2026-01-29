@@ -43,6 +43,15 @@ local function versioner_checkFile(resName, repoOrUrl, cb)
     return false, 'versioner not loaded'
 end
 
+local function make_core_logger()
+    return {
+        info = function(msg) if CZLog and CZLog.info then CZLog.info(msg) else print(tostring(msg)) end end,
+        warn = function(msg) if CZLog and CZLog.warn then CZLog.warn(msg) else print(tostring(msg)) end end,
+        error = function(msg) if CZLog and CZLog.error then CZLog.error(msg) else print(tostring(msg)) end end,
+        debug = function(msg) if CZLog and CZLog.debug then CZLog.debug(msg) else print(tostring(msg)) end end,
+    }
+end
+
 function CzCoreRPC.call(name, sourceOrNil, ...)
     if CZ_RPC and CZ_RPC.call then
         return CZ_RPC.call(name, sourceOrNil, ...)
@@ -53,7 +62,7 @@ function CzCoreRPC.call(name, sourceOrNil, ...)
 end
 
 function GetCore()
-    return { RPC = { raw = CZ_RPC, call = CzCoreRPC.call }, Versioner = { checkFile = versioner_checkFile }, waitForReady = waitForReady }
+    return { RPC = { raw = CZ_RPC, call = CzCoreRPC.call }, Versioner = { checkFile = versioner_checkFile }, waitForReady = waitForReady, Log = make_core_logger() }
 end
 
 if CZLog and CZLog.info then CZLog.info('Core API module loaded') else print('Core API module loaded') end
@@ -65,6 +74,9 @@ _G.CZCore = _G.CZCore or CZCore
 
 -- attach helper onto global for consumers
 CZCore.withCore = CZCore.withCore or withCore
+
+-- ensure a Log table is present on the global convenience object
+CZCore.Log = CZCore.Log or make_core_logger()
 
 -- ensure we broadcast readiness and refresh the global when core reloads
 TriggerEvent('cz-core:ready', CZCore)
