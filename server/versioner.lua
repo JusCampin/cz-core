@@ -206,6 +206,8 @@ local function fetch_remote_version(repoParam, cb)
     local api_idx = 1
     local tried_idx = 1
 
+    local decode_base64
+
     local function try_next_api()
         local b = tried[api_idx]
         if not b then
@@ -265,7 +267,7 @@ local function fetch_remote_version(repoParam, cb)
     end
 
     -- base64 decoder for GitHub Contents API
-    local function decode_base64(data)
+    decode_base64 = function(data)
         local b='ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/'
         data = string.gsub(data, '[^'..b..'=]', '')
         return (data:gsub('.', function(x)
@@ -318,6 +320,8 @@ local function fetch_remote_version(repoParam, cb)
 
     try_next_raw()
 end
+
+local dev_enabled = (Config and Config.Dev and Config.Dev.enabled) or false
 
 function CheckVersion(repo, current_version, cb)
     if not repo or repo == '' then
@@ -400,26 +404,28 @@ local function checkFileWrapper(resName, repoOrUrl, cb)
                 repoLink = ('https://github.com/%s'):format(repoLink)
             end
 
-            if uptodate then
-                print(('^2✅ Up to Date! ^5[%s] ^6(Current Version %s)^0'):format(resName, current_version))
-            elseif overdate then
-                print(('^3⚠️ Unsupported! ^5[%s] ^6(Version %s)^0'):format(resName, current_version))
-                if latest ~= '' then
-                    print(('^4Latest Available ^2(%s) ^3<%s>^0'):format(latest, repoLink))
-                end
-            elseif outdated then
-                print(('^1❌ Outdated! ^5[%s] ^6(Version %s)^0'):format(resName, current_version))
-                if latest ~= '' then
-                    print(('^4NEW VERSION ^2(%s) ^3<%s>^0'):format(latest, repoLink))
-                end
-                if res.changelog and #res.changelog > 0 then
-                    print(('^4CHANGELOG:^0'))
-                    for _, line in ipairs(res.changelog) do
-                        print(('  - %s'):format(line))
+            if dev_enabled then
+                if uptodate then
+                    print(('^2✅ Up to Date! ^5[%s] ^6(Current Version %s)^0'):format(resName, current_version))
+                elseif overdate then
+                    print(('^3⚠️ Unsupported! ^5[%s] ^6(Version %s)^0'):format(resName, current_version))
+                    if latest ~= '' then
+                        print(('^4Latest Available ^2(%s) ^3<%s>^0'):format(latest, repoLink))
                     end
+                elseif outdated then
+                    print(('^1❌ Outdated! ^5[%s] ^6(Version %s)^0'):format(resName, current_version))
+                    if latest ~= '' then
+                        print(('^4NEW VERSION ^2(%s) ^3<%s>^0'):format(latest, repoLink))
+                    end
+                    if res.changelog and #res.changelog > 0 then
+                        print(('^4CHANGELOG:^0'))
+                        for _, line in ipairs(res.changelog) do
+                            print(('  - %s'):format(line))
+                        end
+                    end
+                else
+                    print(('%s is up-to-date (%s)'):format(resName, current_version))
                 end
-            else
-                print(('%s is up-to-date (%s)'):format(resName, current_version))
             end
 
             -- record last check time
