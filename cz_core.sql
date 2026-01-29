@@ -1,26 +1,23 @@
-CREATE TABLE `users` (
-    `id` BIGINT UNSIGNED NOT NULL PRIMARY KEY AUTO_INCREMENT,
-    `username` varchar(255) DEFAULT NULL,
-    `license` varchar(50) DEFAULT NULL,
-    `fivem` varchar(20) DEFAULT NULL,
-    `created_at` TimeStamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    `updated_at` TimeStamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    UNIQUE INDEX `user_license` (`license`) USING BTREE
-) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4;
+-- Users, characters and sessions schema for CoreZ
+CREATE TABLE IF NOT EXISTS users (
+	id INT AUTO_INCREMENT PRIMARY KEY,
+	primary_identifier VARCHAR(128) NOT NULL UNIQUE,
+	identifiers JSON DEFAULT NULL,
+	name VARCHAR(128) DEFAULT NULL,
+	first_seen TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	last_seen TIMESTAMP DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
+	total_play_seconds INT DEFAULT 0
+);
 
-CREATE TABLE `characters` (
-    `id` BIGINT UNSIGNED  NOT NULL PRIMARY KEY AUTO_INCREMENT,
-    `user_id` BIGINT UNSIGNED  NOT NULL,
-    `citizenid` varchar(50) NOT NULL,
-    `char_id` int(11) DEFAULT NULL,
-    `license` varchar(255) NOT NULL,
-    `first_name` varchar(255) NOT NULL,
-    `last_name` varchar(255) NOT NULL,
-    `money` decimal(15,2) NOT NULL,
-    `x` decimal(15,10) NOT NULL,
-    `y` decimal(15,10) NOT NULL,
-    `z` decimal(15,10) NOT NULL,
-    `created_at` TimeStamp NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    `updated_at` TimeStamp NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    CONSTRAINT `FK_User` FOREIGN KEY (`user_id`) REFERENCES `users` (`id`) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB AUTO_INCREMENT=1 DEFAULT CHARSET=utf8mb4;
+CREATE TABLE IF NOT EXISTS characters (
+	id INT AUTO_INCREMENT PRIMARY KEY,
+	user_id INT NOT NULL,
+	first_name VARCHAR(64) DEFAULT NULL,
+	last_name VARCHAR(64) DEFAULT NULL,
+	last_x DOUBLE DEFAULT NULL,
+	last_y DOUBLE DEFAULT NULL,
+	last_z DOUBLE DEFAULT NULL,
+	created_at TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+	is_active TINYINT(1) DEFAULT 1,
+	FOREIGN KEY (user_id) REFERENCES users(id) ON DELETE CASCADE
+);
