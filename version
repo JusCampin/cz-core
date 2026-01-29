@@ -1,5 +1,2 @@
-0.3.0
-- Refactor: split core API and versioner into `server/core_api.lua` and `server/versioner.lua`
-- API change: event-only delivery via `cz-core:ready` and `cz-core:request_api` (no global/export `GetCore`)
-- Feature: Versioner compares local `version` file with repo `version` (supports raw.githubusercontent & Contents API)
-- Docs: README updated with RPC and Versioner usage examples
+0.4.0
+- Fix: forward-declare decode_base64 in versioner to avoid undefined-global on first use
