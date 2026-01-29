@@ -35,3 +35,9 @@ Config.Versioner = {
         backoff = 2000, -- ms base backoff
     },
 }
+
+-- Development / debug flags
+Config.Dev = {
+    -- set to true on development servers to enable verbose logging across resources
+    enabled = false,
+}
